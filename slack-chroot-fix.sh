@@ -26,7 +26,7 @@ echo "$disk"
 e2fsck -f "$disk"
 set -e
 
-mount /dev/"$disk" /mnt
+mount "$disk" /mnt
 mount --bind /dev /mnt/dev
 mount --bind /tmp /mnt/tmp
 mount --bind /run /mnt/run
