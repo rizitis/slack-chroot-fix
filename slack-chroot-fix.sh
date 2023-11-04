@@ -20,7 +20,7 @@ if [ "root" != "$USER" ]; then
   exit
 fi
 
-echo "select the /root disk. this disk will be mount to /mnt and will chroot it"
+echo "select the /root disk. this disk will be mount to /mnt and will be chrooted it"
 select disk in "$(fdisk -l | awk '/^\/dev/ {print $1}')"; do break;done 
 echo "$disk"
 e2fsck -f "$disk"
