@@ -14,6 +14,9 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+mkdir -p /mnt/var/log/ || exit 1
+exec > >(tee -a "/mnt/var/log/chroot_rescue_log.txt") 2>&1
+
 if [ "root" != "$USER" ]; then
   echo "Enter su"
   su -c "$0" root
@@ -27,6 +30,11 @@ e2fsck -f "$disk"
 set -e
 
 mount "$disk" /mnt
+
+if ! mount "$disk" /mnt; then
+  echo "Error: Failed to mount $disk. Exiting."
+  exit 1
+fi
 mount --bind /dev /mnt/dev
 mount --bind /tmp /mnt/tmp
 mount --bind /run /mnt/run
@@ -43,6 +51,7 @@ echo "No UEFI system"
 fi
 
 chroot /mnt /bin/bash
+
 
 arch="$(lscpu | grep Architecture | awk '{print $2}')"
 echo "$arch"
@@ -96,11 +105,27 @@ if ! check_internet; then
   fi
 fi
 
+read -p "Do you want to proceed with system upgrades? (y/n): " answer
+if [[ "$answer" != [Yy]* ]]; then
+  echo "Aborting."
+  exit 0
+fi
+
 slackpkg update gpg
 slackpkg update
 slackpkg upgrade aaa_glibc-solibs
 slackpkg install-new 
 slackpkg upgrade-all
+
+exit
+umount /mnt/dev/pts
+umount /mnt/dev
+umount /mnt/tmp
+umount /mnt/run
+umount /mnt/proc
+umount /mnt/sys
+umount /mnt
+
 
 echo "You may need to update your bootloader"
 echo "lilo,elilo,Grub..."
