@@ -32,7 +32,6 @@ read -p "If you understand the risks and want to proceed, type 'yes' and press E
 
 if [[ "$confirmation" != "yes" ]]; then
   echo "Aborted. Script not executed."
-  pkill -f "flash_text"
   exit 1
 fi
 
