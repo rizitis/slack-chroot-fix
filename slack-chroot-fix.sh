@@ -70,7 +70,6 @@ fi
 manual_intervention() {
   echo "Proceeding with manual intervention..."
   
-  # Example: Display a message and ask the user to perform specific tasks
   echo "You are now in the chroot environment. Please perform the following tasks:"
   echo "1. Inspect and modify necessary files."
   echo "2. Execute custom commands."
