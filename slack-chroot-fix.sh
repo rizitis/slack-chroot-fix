@@ -57,6 +57,45 @@ echo "unkown arch...do it yourself"
 exit
 fi
 
+check_internet() {
+  if ping -q -c 1 -W 1 google.com >/dev/null; then
+    echo "Internet connection is up."
+    return 0  # Success
+  else
+    echo "Error: No internet connection."
+    return 1  # Failure
+  fi
+}
+
+start_network() {
+  echo "Attempting to start the network with dhclient..."
+
+  echo "Available network interfaces:"
+  select network_interface in $(ls /sys/class/net); do
+    break
+  done
+
+  read -p "Enter client identifier (press Enter if none): " client_identifier
+
+  if dhclient -C "$client_identifier" "$network_interface"; then
+    echo "dhclient succeeded. Network started."
+    return 0  # Success
+  else
+    echo "Error: dhclient failed. Unable to start the network."
+    return 1  # Failure
+  fi
+}
+
+
+if ! check_internet; then
+  if start_network; then
+    echo "Network started successfully."
+  else
+    echo "Failed to start the network. Exiting."
+    exit 1
+  fi
+fi
+
 slackpkg update gpg
 slackpkg update
 slackpkg upgrade aaa_glibc-solibs
