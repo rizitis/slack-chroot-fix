@@ -26,18 +26,7 @@ if [ "root" != "$USER" ]; then
   exit
 fi
 
-flash_text() {
-  local text="$1"
-  while true; do
-    echo -e "\033[5m$text\033[0m" # \033[5m and \033[0m are escape codes for blinking and reset
-    sleep 0.5
-    clear
-    sleep 0.5
-  done
-}
-
-
-flash_text "BE CAREFUL! DO NOT RUN THIS SCRIPT ON A WORKING SYSTEM IF YOU DON'T UNDERSTAND IT. IT MAY DESTROY YOUR SYSTEM PERMANENTLY." &
+echo "BE CAREFUL! DO NOT RUN THIS SCRIPT ON A WORKING SYSTEM IF YOU DON'T UNDERSTAND IT. IT MAY DESTROY YOUR SYSTEM PERMANENTLY." 
 
 read -p "If you understand the risks and want to proceed, type 'yes' and press Enter: " confirmation
 
