@@ -151,6 +151,56 @@ slackpkg upgrade aaa_glibc-solibs
 slackpkg install-new 
 slackpkg upgrade-all
 
+echo "You may need to update your bootloader"
+echo "lilo,elilo,Grub..."
+# Function to present bootloader options
+choose_bootloader_command() {
+  echo "Choose bootloader update command:"
+  echo "1. lilo"
+  echo "2. elilo"
+  echo "3. grub"
+  echo "4. Custom Command"
+  echo "5. No, keep going"
+
+  read -p "Enter the number corresponding to your choice: " bootloader_choice
+
+  case "$bootloader_choice" in
+    1) update_lilo ;;
+    2) update_eliloconfig ;;
+    3) update_grub ;;
+    4) custom_command ;;
+    5) echo "Continuing without updating the bootloader." ;;
+    *) echo "Invalid choice. Please enter a number from 1 to 5." ;;
+  esac
+}
+
+# Function to update lilo
+update_lilo() {
+  echo "Updating lilo..."
+  lilo
+}
+
+# Function to update eliloconfig
+update_eliloconfig() {
+  echo "Updating eliloconfig..."
+  eliloconfig 
+}
+
+# Function to update grub
+update_grub() {
+  echo "Updating grub-mkconfig..."
+  grub-mkconfig -o /boot/grub/grub.cfg
+}
+
+# Function for custom command
+custom_command() {
+  read -p "Enter custom command: " user_custom_command
+  echo "Executing custom command: $user_custom_command"
+  eval "$user_custom_command"
+}
+
+choose_bootloader_command
+
 cleanup_and_exit() {
   umount /mnt/dev/pts
   umount /mnt/dev
@@ -160,8 +210,7 @@ cleanup_and_exit() {
   umount /mnt/sys
   umount /mnt
 
-  echo "You may need to update your bootloader"
-  echo "lilo,elilo,Grub..."
+  
   exit
 }
 
