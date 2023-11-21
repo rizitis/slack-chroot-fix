@@ -35,6 +35,7 @@ if ! mount "$disk" /mnt; then
   echo "Error: Failed to mount $disk. Exiting."
   exit 1
 fi
+
 mount --bind /dev /mnt/dev
 mount --bind /tmp /mnt/tmp
 mount --bind /run /mnt/run
@@ -52,6 +53,12 @@ fi
 
 chroot /mnt /bin/bash
 
+if [ $? -eq 0 ]; then
+  echo "Chroot into /mnt was successful."
+else
+  echo "Error: Chroot into /mnt failed."
+  exit 1
+fi
 
 arch="$(lscpu | grep Architecture | awk '{print $2}')"
 echo "$arch"
