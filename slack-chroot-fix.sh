@@ -152,10 +152,6 @@ slackpkg upgrade aaa_glibc-solibs
 slackpkg install-new 
 slackpkg upgrade-all
 
-# Cleanup and exit
-cleanup_and_exit
-
-
 cleanup_and_exit() {
   umount /mnt/dev/pts
   umount /mnt/dev
@@ -170,4 +166,5 @@ cleanup_and_exit() {
   exit
 }
 
-
+# Cleanup and exit
+cleanup_and_exit
