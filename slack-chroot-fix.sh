@@ -1,8 +1,11 @@
 #!/bin/bash
 
-# running this script from a live-slack.iso as root, it
+# Running this script from a live-slack.iso as root, it
 # chrooting a broken Slackware current system and try to fix it. 
 
+# BE CAREFULLY NOT RUN THIS SCRIPT IN A WORKING SYSTEM IF YOU DONT UNDERSTAND IT.
+# IT WILL DESTROY YOUR SYSTEM...FOR EVER.
+# 
 #  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
 #  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
 #  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
@@ -21,6 +24,27 @@ if [ "root" != "$USER" ]; then
   echo "Enter su"
   su -c "$0" root
   exit
+fi
+
+flash_text() {
+  local text="$1"
+  while true; do
+    echo -e "\033[5m$text\033[0m" # \033[5m and \033[0m are escape codes for blinking and reset
+    sleep 0.5
+    clear
+    sleep 0.5
+  done
+}
+
+
+flash_text "BE CAREFUL! DO NOT RUN THIS SCRIPT ON A WORKING SYSTEM IF YOU DON'T UNDERSTAND IT. IT MAY DESTROY YOUR SYSTEM PERMANENTLY." &
+
+read -p "If you understand the risks and want to proceed, type 'yes' and press Enter: " confirmation
+
+if [[ "$confirmation" != "yes" ]]; then
+  echo "Aborted. Script not executed."
+  pkill -f "flash_text"
+  exit 1
 fi
 
 echo "select the /root disk. this disk will be mount to /mnt and will be chrooted"
@@ -53,7 +77,6 @@ fi
 
 chroot /mnt /bin/bash
 
-# Check if chroot was successful
 if [ $? -eq 0 ]; then
   echo "Chroot into /mnt was successful."
 else
@@ -153,7 +176,7 @@ slackpkg upgrade-all
 
 echo "You may need to update your bootloader"
 echo "lilo,elilo,Grub..."
-# Function to present bootloader options
+
 choose_bootloader_command() {
   echo "Choose bootloader update command:"
   echo "1. lilo"
@@ -174,25 +197,21 @@ choose_bootloader_command() {
   esac
 }
 
-# Function to update lilo
 update_lilo() {
   echo "Updating lilo..."
   lilo
 }
 
-# Function to update eliloconfig
 update_eliloconfig() {
   echo "Updating eliloconfig..."
   eliloconfig 
 }
 
-# Function to update grub
 update_grub() {
   echo "Updating grub-mkconfig..."
   grub-mkconfig -o /boot/grub/grub.cfg
 }
 
-# Function for custom command
 custom_command() {
   read -p "Enter custom command: " user_custom_command
   echo "Executing custom command: $user_custom_command"
@@ -214,5 +233,4 @@ cleanup_and_exit() {
   exit
 }
 
-# Cleanup and exit
 cleanup_and_exit
