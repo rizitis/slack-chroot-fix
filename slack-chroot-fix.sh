@@ -14,7 +14,7 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-mkdir -p /mnt/var/log/ || exit 1
+mkdir -p /mnt/var/log/ || { echo "Error: Failed to create log directory. Exiting."; exit 1; }
 exec > >(tee -a "/mnt/var/log/chroot_rescue_log.txt") 2>&1
 
 if [ "root" != "$USER" ]; then
@@ -53,12 +53,40 @@ fi
 
 chroot /mnt /bin/bash
 
+# Check if chroot was successful
 if [ $? -eq 0 ]; then
   echo "Chroot into /mnt was successful."
 else
   echo "Error: Chroot into /mnt failed."
   exit 1
 fi
+
+read -p "Do you want to proceed with manual intervention? (y/n): " answer
+if [[ "$answer" != [Yy]* ]]; then
+  echo "Exiting script."
+  exit 1
+fi
+
+manual_intervention() {
+  echo "Proceeding with manual intervention..."
+  
+  # Example: Display a message and ask the user to perform specific tasks
+  echo "You are now in the chroot environment. Please perform the following tasks:"
+  echo "1. Inspect and modify necessary files."
+  echo "2. Execute custom commands."
+  echo "3. Troubleshoot and fix issues."
+}
+
+while true; do
+  read -p "You are now in the chroot environment. Do you want to continue manually? (y/n): " response
+  case "$response" in
+    [Yy]* ) manual_intervention ;;
+    [Nn]* ) 
+      echo "Exiting manual intervention. Resuming script..."
+      break ;;  # Exit the loop and continue with the rest of the script
+    * ) echo "Please answer yes (y) or no (n)." ;;
+  esac
+done
 
 arch="$(lscpu | grep Architecture | awk '{print $2}')"
 echo "$arch"
@@ -108,14 +136,14 @@ if ! check_internet; then
     echo "Network started successfully."
   else
     echo "Failed to start the network. Exiting."
-    exit 1
+    cleanup_and_exit
   fi
 fi
 
 read -p "Do you want to proceed with system upgrades? (y/n): " answer
 if [[ "$answer" != [Yy]* ]]; then
   echo "Aborting."
-  exit 0
+  cleanup_and_exit
 fi
 
 slackpkg update gpg
@@ -124,16 +152,22 @@ slackpkg upgrade aaa_glibc-solibs
 slackpkg install-new 
 slackpkg upgrade-all
 
-exit
-umount /mnt/dev/pts
-umount /mnt/dev
-umount /mnt/tmp
-umount /mnt/run
-umount /mnt/proc
-umount /mnt/sys
-umount /mnt
+# Cleanup and exit
+cleanup_and_exit
 
 
-echo "You may need to update your bootloader"
-echo "lilo,elilo,Grub..."
+cleanup_and_exit() {
+  umount /mnt/dev/pts
+  umount /mnt/dev
+  umount /mnt/tmp
+  umount /mnt/run
+  umount /mnt/proc
+  umount /mnt/sys
+  umount /mnt
+
+  echo "You may need to update your bootloader"
+  echo "lilo,elilo,Grub..."
+  exit
+}
+
 
